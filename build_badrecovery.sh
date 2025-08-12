@@ -274,7 +274,13 @@ determine_type() {
 	elif [ $ENABLE_POSTINST -eq 1 ]; then
 		TYPE=postinst
 	elif [ $ENABLE_POSTINST_SYM -eq 1 ] && [ $SUPPORTS_BIG_DATE -eq 1 ]; then
-		TYPE=postinst_sym
+		if [ $ENABLE_PERSIST -eq 1 ] && [ $IMAGE_VERSION -gt 67 ]; then
+			TYPE=persist
+		elif [ $ENABLE_BASIC -eq 1 ] && [ $IMAGE_VERSION -gt 67 ]; then
+			TYPE=basic
+		else
+			TYPE=postinst_sym
+		fi
 	elif [ $ENABLE_PERSIST -eq 1 ]; then
 		TYPE=persist
 	elif [ $ENABLE_BASIC -eq 1 ]; then

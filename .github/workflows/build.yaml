@@ -28,11 +28,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y pv
 
-          sudo QUIET=1 ./build_complete.sh "${{ matrix.board }}"
+          sudo QUIET=1 ./build_complete.sh "${{ matrix.board }}" || sudo QUIET=1 ./build_complete.sh "${{ matrix.board }}" || sudo rm data/badrecovery_${{ matrix.board }}.bin
 
       - name: upload img
         uses: actions/upload-artifact@v4
         with:
-          name: badrecovery_${{ matrix.board }}.bin
-          path: data/badrecovery_${{ matrix.board }}.bin
+          name: badrecovery_${{ matrix.board }}
+          path: data/badrecovery_*.bin
           compression-level: 7
