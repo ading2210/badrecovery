@@ -10,6 +10,18 @@ if [ "$EUID" != "0" ]; then
   echo "error: this script must be run as root"
 fi
 
+declare -A special_boards=(
+  ["brask"]="mmcblk0 nvme0n1"
+  ["brya"]="mmcblk0 nvme0n1"
+  ["cherry"]="mmcblk0"
+  ["corsola"]="mmcblk0"
+  ["guybrush"]="mmcblk0 nvme0n1"
+  ["nissa"]="mmcblk0 sda sdb"
+  ["rex"]="nvme0n1"
+  ["skyrim"]="mmcblk0 nvme0n1"
+  ["staryu"]="mmcblk0"
+)
+
 board="$1"
 base_dir="$(realpath -m $(dirname "$0"))"
 data_dir="$base_dir/data"
@@ -66,11 +78,25 @@ if [ ! -f "$image_bin_file" ]; then
   unzip -j "$image_zip_file" -d "$data_dir"
 fi
 
-echo "copying recovery image"
-out_file="$data_dir/badrecovery_$board.bin"
-cp "$image_bin_file" "$out_file"
+image_variants="${special_boards[$board]}"
 
-echo "building badrecovery"
-./build_badrecovery.sh -i "$out_file"
+if [ ! "$image_variants" ]; then
+  echo "copying recovery image"
+  out_file="$data_dir/badrecovery_$board.bin"
+  cp "$image_bin_file" "$out_file"
 
-echo "done! the finished image is located at $out_file"
+  echo "building badrecovery"
+  ./build_badrecovery.sh -i "$out_file"
+  echo "done! the finished image is located at $out_file"
+
+else
+  for variant in $image_variants; do
+    echo "copying recovery image (internal_disk=$variant)"
+    out_file="$data_dir/badrecovery_${board}_${variant}.bin"
+    cp "$image_bin_file" "$out_file"
+
+    echo "building badrecovery (internal_disk=$variant)"
+    ./build_badrecovery.sh -i "$out_file" --internal_disk="$variant"
+    echo "done! the finished image is located at $out_file"
+  done
+fi
